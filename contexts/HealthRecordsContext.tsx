@@ -1,6 +1,6 @@
 import React, { createContext, useState, ReactNode, useContext } from 'react';
-import { DocumentItem, Prescription, Appointment, VitalSign, VaccinationRecord } from '../types';
-import { SampleDocuments, SamplePrescriptions, SampleAppointments, SampleVitals, SampleVaccinations } from '../constants';
+import { DocumentItem, Prescription, Appointment, VitalSign, VaccinationRecord, Condition } from '../types';
+import { SampleDocuments, SamplePrescriptions, SampleAppointments, SampleVitals, SampleVaccinations, SampleConditions } from '../constants';
 
 interface HealthRecordsContextType {
   documents: DocumentItem[];
@@ -13,6 +13,8 @@ interface HealthRecordsContextType {
   setVitals: React.Dispatch<React.SetStateAction<VitalSign[]>>;
   vaccinations: VaccinationRecord[];
   setVaccinations: React.Dispatch<React.SetStateAction<VaccinationRecord[]>>;
+  conditions: Condition[];
+  setConditions: React.Dispatch<React.SetStateAction<Condition[]>>;
 }
 
 const HealthRecordsContext = createContext<HealthRecordsContextType | undefined>(undefined);
@@ -23,6 +25,7 @@ export const HealthRecordsProvider: React.FC<{ children: ReactNode }> = ({ child
   const [appointments, setAppointments] = useState<Appointment[]>(SampleAppointments);
   const [vitals, setVitals] = useState<VitalSign[]>(SampleVitals);
   const [vaccinations, setVaccinations] = useState<VaccinationRecord[]>(SampleVaccinations);
+  const [conditions, setConditions] = useState<Condition[]>(SampleConditions);
 
   return (
     <HealthRecordsContext.Provider value={{ 
@@ -30,7 +33,8 @@ export const HealthRecordsProvider: React.FC<{ children: ReactNode }> = ({ child
       prescriptions, setPrescriptions, 
       appointments, setAppointments, 
       vitals, setVitals, 
-      vaccinations, setVaccinations 
+      vaccinations, setVaccinations,
+      conditions, setConditions
     }}>
       {children}
     </HealthRecordsContext.Provider>

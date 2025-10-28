@@ -48,6 +48,11 @@ export interface Prescription {
   startDate: string;
   endDate?: string;
   notes?: string;
+  // Phase 2 Enhancements
+  supplyDays?: number;
+  refillsRemaining?: number;
+  adherence?: { [date: string]: 'taken' | 'skipped' };
+  conditionId?: string;
 }
 
 export interface Appointment {
@@ -98,6 +103,20 @@ export interface Bill {
   isPaid: boolean;
   notes?: string;
   paymentDate?: string;
+  // Phase 2 Enhancements
+  familyMemberId?: string;
+  appointmentId?: string;
+}
+
+export interface InsuranceClaim {
+  id: string;
+  billId: string;
+  policyId: string;
+  claimNumber: string;
+  submissionDate: string;
+  status: 'Submitted' | 'Processing' | 'Approved' | 'Denied';
+  amountCovered?: number;
+  notes?: string;
 }
 
 export interface WellnessEntry {
@@ -109,6 +128,8 @@ export interface WellnessEntry {
   waterIntakeLiters?: number;
   notes?: string;
   familyMemberId: string; // Add familyMemberId to link wellness to a person
+  calories?: number;
+  mealNotes?: string;
 }
 
 export interface VitalSign {
@@ -130,7 +151,16 @@ export interface VaccinationRecord {
     notes?: string;
 }
 
-export type TimelineEventType = 'document' | 'prescription' | 'note' | 'bill' | 'vital' | 'vaccination' | 'wellness' | 'appointment';
+export interface Condition {
+    id: string;
+    familyMemberId: string;
+    name: string;
+    dateOfDiagnosis: string;
+    status: 'Active' | 'Resolved';
+    notes?: string;
+}
+
+export type TimelineEventType = 'document' | 'prescription' | 'note' | 'bill' | 'vital' | 'vaccination' | 'wellness' | 'appointment' | 'condition';
 
 export interface TimelineEvent {
   id: string;
@@ -183,8 +213,12 @@ export interface BillingSettings {
     policyVisibility: { [policyId: string]: boolean };
 }
 
+export interface DashboardSettings {
+    widgetVisibility: { [widgetId: string]: boolean };
+}
+
 export interface AppSettings {
     wellness: WellnessSettings;
     billing: BillingSettings;
-    // other settings can be added here
+    dashboard: DashboardSettings;
 }

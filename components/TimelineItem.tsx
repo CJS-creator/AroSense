@@ -1,21 +1,21 @@
 import React from 'react';
 import { TimelineEvent, TimelineEventType } from '../types';
-import { IconDocument, IconPrescription, IconEmergency, IconCreditCard, IconVitals, IconSyringe, IconHeart, IconCalendar } from '../constants';
+import { IconDocument, IconPrescription, IconEmergency, IconCreditCard, IconVitals, IconSyringe, IconHeart, IconCalendar, IconDiagnoses } from '../constants';
 
 interface TimelineItemProps {
   event: TimelineEvent;
 }
 
-// Updated config to use thematic, professional colors
 const eventConfig: Record<TimelineEventType, { icon: React.FC<{className?: string}>; color: string; }> = {
-  document: { icon: IconDocument, color: 'bg-primary-DEFAULT' }, // Thematic blue
-  prescription: { icon: IconPrescription, color: 'bg-secondary-DEFAULT' }, // Thematic teal
-  note: { icon: IconEmergency, color: 'bg-yellow-500' }, // Yellow for general notes
+  document: { icon: IconDocument, color: 'bg-primary-DEFAULT' },
+  prescription: { icon: IconPrescription, color: 'bg-secondary-DEFAULT' },
+  note: { icon: IconEmergency, color: 'bg-yellow-500' },
   bill: { icon: IconCreditCard, color: 'bg-green-500' },
   vital: { icon: IconVitals, color: 'bg-indigo-500'},
   vaccination: { icon: IconSyringe, color: 'bg-cyan-500' },
   wellness: { icon: IconHeart, color: 'bg-purple-500' },
   appointment: { icon: IconCalendar, color: 'bg-orange-500' },
+  condition: { icon: IconDiagnoses, color: 'bg-rose-500' },
 };
 
 const criticalNoteColor = 'bg-danger';
@@ -27,7 +27,6 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({ event }) => {
   }
 
   const { icon: Icon } = config;
-  // If the event is a note and is critical, override the color to be the danger color.
   const isCriticalNote = event.type === 'note' && event.isCritical;
   const dotColor = isCriticalNote ? criticalNoteColor : config.color;
   const iconColor = isCriticalNote ? 'text-danger' : 'text-textSecondary';

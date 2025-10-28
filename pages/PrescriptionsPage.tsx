@@ -1,18 +1,17 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { PrescriptionRow } from '../components/PrescriptionRow';
 import { AddEditPrescriptionModal } from '../components/AddEditPrescriptionModal';
 import { Button, Card, CardContent, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label, Select } from '../components/bits';
 import { IconPlus, IconPrescription } from '../constants';
 import { Prescription } from '../types';
-// FIX: Replaced incorrect AppContext with specific context hooks.
 import { useHealthRecords } from '../contexts/HealthRecordsContext';
 import { useFamily } from '../contexts/FamilyContext';
 import { useToast } from '../components/toast/useToast';
+import { PrescriptionCard } from '../components/PrescriptionCard';
+import { SlideInList } from '../components/animations/SlideInList';
 
 export const PrescriptionsPage: React.FC = () => {
-  // FIX: Used specific context hooks to get state.
   const { prescriptions, setPrescriptions } = useHealthRecords();
-  const { familyMembers } = useFamily();
+  const { familyMembers, getMemberName } = useFamily();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPrescription, setEditingPrescription] = useState<Prescription | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,22 +55,31 @@ export const PrescriptionsPage: React.FC = () => {
     setEditingPrescription(null);
   }, []);
 
-  const getMemberName = useCallback((memberId: string): string => {
-    const member = familyMembers.find(fm => fm.id === memberId);
-    return member ? member.name : 'Unknown Member';
-  }, [familyMembers]);
+  const handleUpdateAdherence = useCallback((prescriptionId: string, date: string, status: 'taken' | 'skipped') => {
+    setPrescriptions(prev => prev.map(rx => {
+      if (rx.id === prescriptionId) {
+        const newAdherence = { ...(rx.adherence || {}) };
+        if (newAdherence[date] === status) {
+          delete newAdherence[date]; // Toggle off
+        } else {
+          newAdherence[date] = status;
+        }
+        return { ...rx, adherence: newAdherence };
+      }
+      return rx;
+    }));
+  }, [setPrescriptions]);
 
   const filteredPrescriptions = useMemo(() => {
     return prescriptions.filter(rx => {
-      const member = familyMembers.find(fm => fm.id === rx.familyMemberId);
-      const memberName = member ? member.name : '';
+      const memberName = getMemberName(rx.familyMemberId);
       const matchesSearchTerm = rx.medicationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 rx.prescribingDoctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 memberName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesMember = filterMember ? rx.familyMemberId === filterMember : true;
       return matchesSearchTerm && matchesMember;
     });
-  }, [prescriptions, searchTerm, filterMember, familyMembers]);
+  }, [prescriptions, searchTerm, filterMember, getMemberName]);
 
 
   return (
@@ -120,34 +128,17 @@ export const PrescriptionsPage: React.FC = () => {
             </CardContent>
         </Card>
       ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border">
-                <thead className="bg-surface-soft">
-                <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Medication</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Member</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Dosage</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Frequency</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Doctor</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Start Date</th>
-                    <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
-                </tr>
-                </thead>
-                <tbody className="bg-surface divide-y divide-border">
-                {filteredPrescriptions.map((rx) => (
-                    <PrescriptionRow 
-                    key={rx.id} 
-                    prescription={rx} 
-                    onEdit={handleEditPrescription} 
-                    onDelete={requestDeletePrescription}
-                    getMemberName={getMemberName}
-                    />
-                ))}
-                </tbody>
-            </table>
-          </div>
-        </Card>
+        <SlideInList className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+          {filteredPrescriptions.map((rx) => (
+            <PrescriptionCard 
+              key={rx.id}
+              prescription={rx}
+              onEdit={handleEditPrescription}
+              onDelete={requestDeletePrescription}
+              onUpdateAdherence={handleUpdateAdherence}
+            />
+          ))}
+        </SlideInList>
       )}
 
       <AddEditPrescriptionModal 

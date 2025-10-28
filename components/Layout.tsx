@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ToastContainer } from './toast/ToastContainer';
+import { useNotifications } from '../hooks/useNotifications';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,9 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Initialize proactive notifications on app load
+  useNotifications();
 
   return (
     <div className="flex h-screen bg-background text-textPrimary">

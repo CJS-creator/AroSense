@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bill } from '../types';
-import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Input, Label, Textarea } from './bits';
+import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Input, Label, Select, Textarea } from './bits';
 import { useToast } from './toast/useToast';
-// FIX: Replaced incorrect AppContext with useFinancial hook.
 import { useFinancial } from '../contexts/FinancialContext';
+import { useFamily } from '../contexts/FamilyContext';
+import { useHealthRecords } from '../contexts/HealthRecordsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddEditBillModalProps {
@@ -20,12 +21,15 @@ const initialFormState: Omit<Bill, 'id'> = {
     isPaid: false,
     notes: '',
     paymentDate: '',
+    familyMemberId: '',
+    appointmentId: '',
 };
 
 export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onClose, billToEdit }) => {
     const [formData, setFormData] = useState<Omit<Bill, 'id'>>(initialFormState);
-    // FIX: Used the useFinancial hook to correctly get bills state.
     const { bills, setBills } = useFinancial();
+    const { familyMembers } = useFamily();
+    const { appointments } = useHealthRecords();
     const toast = useToast();
 
     useEffect(() => {
@@ -38,20 +42,31 @@ export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onCl
                 isPaid: billToEdit.isPaid,
                 notes: billToEdit.notes || '',
                 paymentDate: billToEdit.paymentDate || '',
+                familyMemberId: billToEdit.familyMemberId || '',
+                appointmentId: billToEdit.appointmentId || '',
             });
         } else {
             setFormData(initialFormState);
         }
     }, [billToEdit, isOpen]);
+    
+    const familyMemberOptions = useMemo(() => familyMembers.map(fm => ({ value: fm.id, label: fm.name })), [familyMembers]);
+    
+    const appointmentOptions = useMemo(() => {
+        if (!formData.familyMemberId) return [];
+        return appointments
+            .filter(a => a.familyMemberId === formData.familyMemberId)
+            .map(a => ({ value: a.id, label: `${new Date(a.date).toLocaleDateString()} - ${a.doctor} (${a.type})`}));
+    }, [appointments, formData.familyMemberId]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         if (type === 'checkbox') {
             const isChecked = (e.target as HTMLInputElement).checked;
             setFormData(prev => ({
                 ...prev,
                 isPaid: isChecked,
-                // If unchecking, clear payment date. If checking, set to today as default if not already set.
                 paymentDate: isChecked ? (prev.paymentDate || new Date().toISOString().split('T')[0]) : ''
             }));
         } else if (type === 'number') {
@@ -134,6 +149,14 @@ export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onCl
                             </motion.div>
                         )}
                     </AnimatePresence>
+                     <div className="space-y-2">
+                        <Label htmlFor="familyMemberId">Link to Family Member (Optional)</Label>
+                        <Select id="familyMemberId" name="familyMemberId" value={formData.familyMemberId} onChange={handleChange} options={familyMemberOptions} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="appointmentId">Link to Appointment (Optional)</Label>
+                        <Select id="appointmentId" name="appointmentId" value={formData.appointmentId} onChange={handleChange} options={appointmentOptions} disabled={!formData.familyMemberId || appointmentOptions.length === 0} />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="notes">Notes (Optional)</Label>
                         <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., ER visit for sprained ankle." />

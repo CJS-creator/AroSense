@@ -1,6 +1,6 @@
 import React, { createContext, useState, ReactNode, useContext, useEffect } from 'react';
 import { AppSettings, EmergencyContact } from '../types';
-import { SampleEmergencyContacts, SampleInsurancePolicies } from '../constants'; // Assuming policies are needed for defaults
+import { SampleEmergencyContacts } from '../constants';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -11,13 +11,22 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-// Helper to initialize policy visibility
-const initializePolicyVisibility = () => {
-  const visibility: { [policyId: string]: boolean } = {};
-  SampleInsurancePolicies.forEach(policy => {
-    visibility[policy.id] = true; // Default to all visible
-  });
-  return visibility;
+export const DASHBOARD_WIDGETS = [
+    { id: 'stats', name: 'Quick Stats' },
+    { id: 'actions', name: 'Action Center' },
+    { id: 'appointments', name: 'Upcoming Appointments' },
+    { id: 'activity', name: 'Recent Activity' },
+    { id: 'family', name: 'Family Overview' },
+    { id: 'wellness', name: 'Quick Wellness Log' },
+    { id: 'explore', name: 'Explore' },
+];
+
+const initializeWidgetVisibility = () => {
+    const visibility: { [widgetId: string]: boolean } = {};
+    DASHBOARD_WIDGETS.forEach(widget => {
+        visibility[widget.id] = true;
+    });
+    return visibility;
 };
 
 
@@ -32,7 +41,10 @@ const defaultSettings: AppSettings = {
     billing: {
         defaultPaymentMethod: 'HSA Card',
         dueDateRemindersEnabled: true,
-        policyVisibility: initializePolicyVisibility(),
+        policyVisibility: {}, // This will be populated from financial context in a real app
+    },
+    dashboard: {
+        widgetVisibility: initializeWidgetVisibility(),
     }
 }
 
@@ -42,11 +54,12 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         const storedSettings = localStorage.getItem('appSettings');
         if (storedSettings) {
             const parsed = JSON.parse(storedSettings);
-            // Deep merge to ensure new settings keys are added
+            // Deep merge to ensure new settings keys are added and to prevent errors from old/incomplete stored settings
             return {
                 ...defaultSettings,
-                wellness: { ...defaultSettings.wellness, ...parsed.wellness },
-                billing: { ...defaultSettings.billing, ...parsed.billing }
+                wellness: { ...defaultSettings.wellness, ...(parsed.wellness || {}) },
+                billing: { ...defaultSettings.billing, ...(parsed.billing || {}) },
+                dashboard: { ...defaultSettings.dashboard, ...(parsed.dashboard || {}) },
             };
         }
     } catch (error) {

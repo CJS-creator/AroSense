@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Prescription } from '../types';
 import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Input, Label, Select, Textarea } from './bits';
 // FIX: Replaced incorrect AppContext with specific context hooks.
 import { useHealthRecords } from '../contexts/HealthRecordsContext';
 import { useFamily } from '../contexts/FamilyContext';
 import { useToast } from './toast/useToast';
+import { ExpandCollapse } from './animations/ExpandCollapse';
 
 interface AddEditPrescriptionModalProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ interface AddEditPrescriptionModalProps {
   prescriptionToEdit?: Prescription | null;
 }
 
-const initialFormState: Omit<Prescription, 'id'> = {
+const initialFormState: Omit<Prescription, 'id' | 'adherence'> = {
   medicationName: '',
   dosage: '',
   frequency: '',
@@ -22,19 +23,30 @@ const initialFormState: Omit<Prescription, 'id'> = {
   startDate: new Date().toISOString().split('T')[0],
   endDate: '',
   notes: '',
+  supplyDays: undefined,
+  refillsRemaining: undefined,
+  conditionId: '',
 };
 
 export const AddEditPrescriptionModal: React.FC<AddEditPrescriptionModalProps> = ({ isOpen, onClose, prescriptionToEdit }) => {
-  const [formData, setFormData] = useState<Omit<Prescription, 'id'>>(initialFormState);
+  const [formData, setFormData] = useState<Omit<Prescription, 'id' | 'adherence'>>(initialFormState);
   // FIX: Used specific context hooks to get state.
-  const { prescriptions, setPrescriptions } = useHealthRecords();
+  const { prescriptions, setPrescriptions, conditions } = useHealthRecords();
   const { familyMembers } = useFamily();
   const toast = useToast();
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const familyMemberOptions = familyMembers.map(fm => ({ value: fm.id, label: fm.name }));
   if (familyMembers.length === 0) {
      familyMemberOptions.push({value: "", label: "Add a family member first"});
   }
+
+  const conditionOptions = useMemo(() => {
+    if (!formData.familyMemberId) return [];
+    return conditions
+      .filter(c => c.familyMemberId === formData.familyMemberId && c.status === 'Active')
+      .map(c => ({ value: c.id, label: c.name }));
+  }, [conditions, formData.familyMemberId]);
 
 
   useEffect(() => {
@@ -49,16 +61,29 @@ export const AddEditPrescriptionModal: React.FC<AddEditPrescriptionModalProps> =
         startDate: prescriptionToEdit.startDate,
         endDate: prescriptionToEdit.endDate || '',
         notes: prescriptionToEdit.notes || '',
+        supplyDays: prescriptionToEdit.supplyDays,
+        refillsRemaining: prescriptionToEdit.refillsRemaining,
+        conditionId: prescriptionToEdit.conditionId || '',
       });
+      if (prescriptionToEdit.supplyDays || prescriptionToEdit.refillsRemaining || prescriptionToEdit.conditionId) {
+        setShowAdvanced(true);
+      }
     } else {
       // Set default family member if available and not editing
       setFormData({...initialFormState, familyMemberId: familyMembers[0]?.id || ''});
+      setShowAdvanced(false);
     }
   }, [prescriptionToEdit, isOpen, familyMembers]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    let processedValue: string | number | undefined = value;
+
+    if (name === 'supplyDays' || name === 'refillsRemaining') {
+        processedValue = value === '' ? undefined : parseInt(value, 10);
+    }
+
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,7 +101,7 @@ export const AddEditPrescriptionModal: React.FC<AddEditPrescriptionModalProps> =
       setPrescriptions(prescriptions.map(p => p.id === prescriptionToEdit.id ? { ...prescriptionToEdit, ...formData } : p));
       toast.add('Prescription updated successfully!', 'success');
     } else {
-      const newPrescription: Prescription = { ...formData, id: `rx-${Date.now()}` };
+      const newPrescription: Prescription = { ...formData, id: `rx-${Date.now()}`, adherence: {} };
       setPrescriptions([...prescriptions, newPrescription]);
       toast.add('Prescription added successfully!', 'success');
     }
@@ -136,7 +161,34 @@ export const AddEditPrescriptionModal: React.FC<AddEditPrescriptionModalProps> =
                     <Label htmlFor="notes">Notes (Optional)</Label>
                     <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., Take with food, For ear infection, Side effects to watch for" />
                 </div>
-                <DialogFooter>
+
+                <div className="flex items-center justify-end -mb-2">
+                    <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="text-sm text-primary-DEFAULT hover:underline font-medium p-1">
+                        {showAdvanced ? 'Hide' : 'Show'} advanced options
+                    </button>
+                </div>
+
+                <ExpandCollapse isExpanded={showAdvanced}>
+                    <div className="space-y-4 pt-4 border-t border-border">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="supplyDays">Supply (Days)</Label>
+                                <Input id="supplyDays" name="supplyDays" type="number" value={formData.supplyDays ?? ''} onChange={handleChange} placeholder="e.g., 30" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="refillsRemaining">Refills Remaining</Label>
+                                <Input id="refillsRemaining" name="refillsRemaining" type="number" value={formData.refillsRemaining ?? ''} onChange={handleChange} placeholder="e.g., 2" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="conditionId">Link to Condition (Optional)</Label>
+                            <Select id="conditionId" name="conditionId" value={formData.conditionId} onChange={handleChange} options={conditionOptions} disabled={conditionOptions.length === 0} />
+                        </div>
+                    </div>
+                </ExpandCollapse>
+
+
+                <DialogFooter className="!pt-4">
                     <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
                     <Button type="submit" disabled={familyMembers.length === 0 && !prescriptionToEdit}>{prescriptionToEdit ? 'Save Changes' : 'Add Prescription'}</Button>
                 </DialogFooter>

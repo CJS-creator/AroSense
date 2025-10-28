@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
     Squares2X2Icon,
@@ -30,9 +31,11 @@ import {
     BuildingOffice2Icon,
     BuildingStorefrontIcon,
     FaceSmileIcon,
+    ClipboardDocumentCheckIcon,
+    DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
-import { FamilyMember, DocumentItem, Prescription, EmergencyContact, MedicalNote, InsurancePolicy, Bill, Appointment, VitalSign, VaccinationRecord, Relationship } from './types';
+import { FamilyMember, DocumentItem, Prescription, EmergencyContact, MedicalNote, InsurancePolicy, Bill, Appointment, VitalSign, VaccinationRecord, Relationship, Condition, InsuranceClaim } from './types';
 
 // ============================================================================
 // ICONS
@@ -45,6 +48,7 @@ export const IconDocument = DocumentTextIcon;
 export const IconPrescription = ClipboardDocumentListIcon;
 export const IconWellness = HeartIcon;
 export const IconPregnancy = CalendarDaysIcon;
+// FIX: Corrected typo from Cog6toothIcon to Cog6ToothIcon.
 export const IconSettings = Cog6ToothIcon;
 export const IconCreditCard = CreditCardIcon;
 export const IconBars3 = Bars3Icon;
@@ -73,6 +77,8 @@ export const IconHospital = BuildingOffice2Icon;
 export const IconPharmacy = BuildingStorefrontIcon;
 export const IconBaby = FaceSmileIcon;
 export const IconImageAnalyzer = SparklesIcon;
+export const IconDiagnoses = ClipboardDocumentCheckIcon;
+export const IconClaim = DocumentDuplicateIcon;
 
 
 // ============================================================================
@@ -107,9 +113,9 @@ const startDateForExpiringRx = new Date(today);
 startDateForExpiringRx.setDate(today.getDate() - 25);
 
 export const SamplePrescriptions: Prescription[] = [
-    { id: 'rx1', medicationName: 'Amoxicillin', dosage: '250mg', frequency: 'Twice a day for 10 days', prescribingDoctor: 'Dr. Evans', familyMemberId: 'fm3', startDate: '2023-11-01', endDate: '2023-11-10', notes: 'For ear infection. Take with food.' },
-    { id: 'rx2', medicationName: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', prescribingDoctor: 'Dr. Smith', familyMemberId: 'fm1', startDate: '2022-01-15', notes: 'For blood pressure management.' },
-    { id: 'rx3', medicationName: 'Metformin', dosage: '500mg', frequency: 'Once daily', prescribingDoctor: 'Dr. Chen', familyMemberId: 'fm2', startDate: startDateForExpiringRx.toISOString().split('T')[0], endDate: fiveDaysFromNow.toISOString().split('T')[0], notes: 'For glucose control. Refill needed soon.' },
+    { id: 'rx1', medicationName: 'Amoxicillin', dosage: '250mg', frequency: 'Twice a day for 10 days', prescribingDoctor: 'Dr. Evans', familyMemberId: 'fm3', startDate: '2023-11-01', endDate: '2023-11-10', notes: 'For ear infection. Take with food.', conditionId: 'cond3', supplyDays: 10, refillsRemaining: 0, adherence: {} },
+    { id: 'rx2', medicationName: 'Lisinopril', dosage: '10mg', frequency: 'Once daily', prescribingDoctor: 'Dr. Smith', familyMemberId: 'fm1', startDate: '2022-01-15', notes: 'For blood pressure management.', supplyDays: 90, refillsRemaining: 2, adherence: {} },
+    { id: 'rx3', medicationName: 'Sumatriptan', dosage: '50mg', frequency: 'As needed for migraines', prescribingDoctor: 'Dr. Chen', familyMemberId: 'fm2', startDate: '2023-01-01', conditionId: 'cond2', refillsRemaining: 5, adherence: {} },
 ];
 
 export const SampleEmergencyContacts: EmergencyContact[] = [
@@ -128,13 +134,19 @@ export const SampleInsurancePolicies: InsurancePolicy[] = [
 ];
 
 export const SampleBills: Bill[] = [
-    { id: 'bill1', serviceProvider: 'City General Hospital', serviceDate: '2023-11-01', amountDue: 150.75, dueDate: '2023-11-30', isPaid: true, notes: "Charlie's ER visit for ear infection" },
-    { id: 'bill2', serviceProvider: 'Quest Diagnostics', serviceDate: '2023-10-22', amountDue: 45.50, dueDate: '2023-12-15', isPaid: false, notes: "Alex's annual blood work" },
+    { id: 'bill1', serviceProvider: 'City General Hospital', serviceDate: '2023-11-01', amountDue: 150.75, dueDate: '2023-11-30', isPaid: true, notes: "Charlie's ER visit for ear infection", familyMemberId: 'fm3', appointmentId: 'app-er' },
+    { id: 'bill2', serviceProvider: 'Quest Diagnostics', serviceDate: '2023-10-22', amountDue: 45.50, dueDate: '2023-12-15', isPaid: false, notes: "Alex's annual blood work", familyMemberId: 'fm1' },
+];
+
+export const SampleClaims: InsuranceClaim[] = [
+    { id: 'claim1', billId: 'bill1', policyId: 'ins1', claimNumber: 'CLM-2023-A1', submissionDate: '2023-11-05', status: 'Approved', amountCovered: 120.50, notes: 'Coverage for ER visit.' },
+    { id: 'claim2', billId: 'bill2', policyId: 'ins1', claimNumber: 'CLM-2023-B2', submissionDate: '2023-10-25', status: 'Processing', notes: 'Awaiting EOB.' }
 ];
 
 export const SampleAppointments: Appointment[] = [
     { id: 'app1', date: new Date(new Date().setDate(new Date().getDate() + 10)).toISOString().split('T')[0], time: '10:00 AM', doctor: 'Dr. Evans', notes: 'Annual check-up for Charlie', type: 'Check-up', familyMemberId: 'fm3' },
     { id: 'app2', date: new Date(new Date().setDate(new Date().getDate() + 25)).toISOString().split('T')[0], time: '02:30 PM', doctor: 'Dr. Miller (Dentist)', notes: 'Routine cleaning', type: 'Dental', familyMemberId: 'fm2' },
+    { id: 'app-er', date: '2023-11-01', time: '08:00 PM', doctor: 'City General Hospital ER', notes: 'Visit for high fever and ear pain.', type: 'Consultation', familyMemberId: 'fm3' },
 ];
 
 export const SampleVitals: VitalSign[] = [
@@ -145,4 +157,10 @@ export const SampleVitals: VitalSign[] = [
 export const SampleVaccinations: VaccinationRecord[] = [
     { id: 'vac1', familyMemberId: 'fm3', vaccineName: 'MMR (Dose 2)', dateAdministered: '2023-09-15' },
     { id: 'vac2', familyMemberId: 'fm1', vaccineName: 'Tetanus Booster', dateAdministered: '2021-07-20' },
+];
+
+export const SampleConditions: Condition[] = [
+    { id: 'cond1', familyMemberId: 'fm1', name: 'Seasonal Allergies', dateOfDiagnosis: '2010-04-01', status: 'Active' },
+    { id: 'cond2', familyMemberId: 'fm2', name: 'Migraines', dateOfDiagnosis: '2015-01-20', status: 'Active', notes: 'Managed with medication as needed.' },
+    { id: 'cond3', familyMemberId: 'fm3', name: 'Otitis Media (Ear Infection)', dateOfDiagnosis: '2023-11-01', status: 'Resolved', notes: 'Treated with Amoxicillin.' },
 ];

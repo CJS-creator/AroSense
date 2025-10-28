@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-// FIX: Removed incorrect AppContext import.
 import { useUser } from '../contexts/UserContext';
 import { IconBars3 } from '../constants';
+import { GlobalSearch } from './GlobalSearch';
 
 interface HeaderProps {
   onMenuButtonClick: () => void;
@@ -10,14 +10,12 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onMenuButtonClick }) => {
   const location = useLocation();
-  // FIX: Used the useUser hook to correctly get currentUser.
   const { currentUser } = useUser();
 
   const getPageTitle = () => {
     const path = location.pathname.split('/')[1];
     if (location.pathname.startsWith('/family/')) return 'Family Member Details';
     if (!path || path === '') return 'Dashboard';
-    // Capitalize first letter and replace hyphens with spaces for multi-word titles
     return path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
   };
 
@@ -34,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuButtonClick }) => {
         <h2 className="text-xl md:text-2xl font-semibold text-textPrimary">{getPageTitle()}</h2>
       </div>
       <div className="flex items-center space-x-4">
+        <GlobalSearch />
         <span className="hidden sm:block text-textSecondary font-medium">{currentUser.name}</span>
         <img 
           src={currentUser.avatarUrl || `https://i.pravatar.cc/40?u=${currentUser.id}`} 
