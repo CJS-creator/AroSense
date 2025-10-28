@@ -1,0 +1,8 @@
+{
+  "name": "AroSense Family Health Hub",
+  "description": "A comprehensive application to manage family health records, appointments, prescriptions, and wellness, with special features for emergency preparedness and pregnancy tracking.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}
