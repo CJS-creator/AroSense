@@ -85,6 +85,8 @@ export interface InsurancePolicy {
   coverageDetails?: string;
   effectiveDate: string;
   expirationDate?: string;
+  paymentMethod?: string;
+  copayAmount?: number;
 }
 
 export interface Bill {
@@ -95,6 +97,7 @@ export interface Bill {
   dueDate: string;
   isPaid: boolean;
   notes?: string;
+  paymentDate?: string;
 }
 
 export interface WellnessEntry {
@@ -161,4 +164,27 @@ export interface KickCounterSession {
     endTime: number; // timestamp
     kicks: { time: number }[]; // array of kick timestamps
     durationSeconds: number;
+}
+
+// ===============================================
+// SETTINGS TYPES
+// ===============================================
+export interface WellnessSettings {
+    defaultMood: WellnessEntry['mood'];
+    waterIntakeGoalLiters: number;
+    sleepGoalHours: number;
+    remindersEnabled: boolean;
+    reminderTime: string; // HH:mm format
+}
+
+export interface BillingSettings {
+    defaultPaymentMethod: string;
+    dueDateRemindersEnabled: boolean;
+    policyVisibility: { [policyId: string]: boolean };
+}
+
+export interface AppSettings {
+    wellness: WellnessSettings;
+    billing: BillingSettings;
+    // other settings can be added here
 }

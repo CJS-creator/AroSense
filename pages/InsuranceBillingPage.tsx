@@ -10,6 +10,7 @@ import { AddEditInsuranceModal } from '../components/AddEditInsuranceModal';
 import { BillRow } from '../components/BillRow';
 import { AddEditBillModal } from '../components/AddEditBillModal';
 import { useToast } from '../components/toast/useToast';
+import { AnimatePresence } from 'framer-motion';
 
 export const InsuranceBillingPage: React.FC = () => {
     // FIX: Used specific context hooks to get state.
@@ -61,7 +62,11 @@ export const InsuranceBillingPage: React.FC = () => {
     };
 
     const handleBillStatusChange = (bill: Bill, isPaid: boolean) => {
-        setBills(prevBills => prevBills.map(b => b.id === bill.id ? { ...b, isPaid } : b));
+        setBills(prevBills => prevBills.map(b => b.id === bill.id ? { 
+            ...b, 
+            isPaid,
+            paymentDate: isPaid ? (b.paymentDate || new Date().toISOString().split('T')[0]) : undefined
+        } : b));
         toast.add(`Bill status updated to ${isPaid ? 'Paid' : 'Unpaid'}.`, 'success');
     };
 
@@ -121,19 +126,22 @@ export const InsuranceBillingPage: React.FC = () => {
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Provider</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Amount</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Due Date</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Payment Date</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-textSecondary uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-surface divide-y divide-border">
-                                    {bills.map(bill => (
-                                        <BillRow 
-                                            key={bill.id}
-                                            bill={bill}
-                                            onEdit={handleEditBill}
-                                            onDelete={requestDeleteBill}
-                                            onStatusChange={handleBillStatusChange}
-                                        />
-                                    ))}
+                                    <AnimatePresence>
+                                        {bills.map(bill => (
+                                            <BillRow 
+                                                key={bill.id}
+                                                bill={bill}
+                                                onEdit={handleEditBill}
+                                                onDelete={requestDeleteBill}
+                                                onStatusChange={handleBillStatusChange}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
                                 </tbody>
                             </table>
                         </div>

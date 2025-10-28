@@ -1,7 +1,8 @@
 import React from 'react';
 import { InsurancePolicy } from '../types';
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from './bits';
+import { Button, CardContent, CardFooter, CardHeader, CardTitle } from './bits';
 import { IconPencil, IconTrash, IconShieldCheck } from '../constants';
+import { HoverCard } from './animations/HoverCard';
 
 interface InsurancePolicyCardProps {
     policy: InsurancePolicy;
@@ -12,7 +13,7 @@ interface InsurancePolicyCardProps {
 
 export const InsurancePolicyCard: React.FC<InsurancePolicyCardProps> = ({ policy, memberName, onEdit, onDelete }) => {
     return (
-        <Card className="flex flex-col h-full">
+        <HoverCard className="flex flex-col h-full">
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                 <IconShieldCheck className="w-8 h-8 text-primary-DEFAULT mt-1 flex-shrink-0" />
                 <div className="flex-grow">
@@ -35,6 +36,18 @@ export const InsurancePolicyCard: React.FC<InsurancePolicyCardProps> = ({ policy
                     <span className="text-textSecondary">Effective:</span>
                     <span className="font-medium text-textPrimary">{new Date(policy.effectiveDate).toLocaleDateString()}</span>
                 </div>
+                 {typeof policy.copayAmount === 'number' && (
+                    <div className="flex justify-between">
+                        <span className="text-textSecondary">Copay:</span>
+                        <span className="font-medium text-textPrimary">${policy.copayAmount.toFixed(2)}</span>
+                    </div>
+                )}
+                {policy.paymentMethod && (
+                    <div className="flex justify-between">
+                        <span className="text-textSecondary">Payment:</span>
+                        <span className="font-medium text-textPrimary">{policy.paymentMethod}</span>
+                    </div>
+                )}
                  {policy.coverageDetails && (
                     <p className="text-xs text-textSecondary mt-3 pt-3 border-t border-border line-clamp-2">
                         {policy.coverageDetails}
@@ -49,6 +62,6 @@ export const InsurancePolicyCard: React.FC<InsurancePolicyCardProps> = ({ policy
                     Delete
                 </Button>
             </CardFooter>
-        </Card>
+        </HoverCard>
     );
 };

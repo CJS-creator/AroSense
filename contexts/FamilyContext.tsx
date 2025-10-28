@@ -1,12 +1,10 @@
 import React, { createContext, useState, ReactNode, useContext } from 'react';
-import { FamilyMember, EmergencyContact, MedicalNote } from '../types';
-import { SampleFamilyMembers, SampleEmergencyContacts, SampleMedicalNotes } from '../constants';
+import { FamilyMember, MedicalNote } from '../types';
+import { SampleFamilyMembers, SampleMedicalNotes } from '../constants';
 
 interface FamilyContextType {
   familyMembers: FamilyMember[];
   setFamilyMembers: React.Dispatch<React.SetStateAction<FamilyMember[]>>;
-  emergencyContacts: EmergencyContact[];
-  setEmergencyContacts: React.Dispatch<React.SetStateAction<EmergencyContact[]>>;
   medicalNotes: MedicalNote[];
   setMedicalNotes: React.Dispatch<React.SetStateAction<MedicalNote[]>>;
   getMemberName: (memberId?: string) => string;
@@ -16,7 +14,6 @@ const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
 
 export const FamilyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(SampleFamilyMembers);
-  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>(SampleEmergencyContacts);
   const [medicalNotes, setMedicalNotes] = useState<MedicalNote[]>(SampleMedicalNotes);
   
   const getMemberName = (memberId?: string): string => {
@@ -26,7 +23,7 @@ export const FamilyProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   return (
-    <FamilyContext.Provider value={{ familyMembers, setFamilyMembers, emergencyContacts, setEmergencyContacts, medicalNotes, setMedicalNotes, getMemberName }}>
+    <FamilyContext.Provider value={{ familyMembers, setFamilyMembers, medicalNotes, setMedicalNotes, getMemberName }}>
       {children}
     </FamilyContext.Provider>
   );

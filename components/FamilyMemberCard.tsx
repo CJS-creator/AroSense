@@ -3,7 +3,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FamilyMember } from '../types';
 import { IconPencil, IconTrash } from '../constants';
-import { Button, Card, CardContent, CardFooter, CardHeader } from './bits';
+import { Button, CardContent, CardFooter, CardHeader } from './bits';
+import { HoverCard } from './animations/HoverCard';
+import { AnimatedAvatar } from './animations/AnimatedAvatar';
 
 interface FamilyMemberCardProps {
   member: FamilyMember;
@@ -29,15 +31,15 @@ export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({ member, onEd
   };
 
   return (
-    <Card 
-      className="flex flex-col transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl cursor-pointer h-full"
+    <HoverCard 
+      className="flex flex-col cursor-pointer h-full"
       onClick={handleNavigate}
       role="link"
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleNavigate()}
     >
       <CardHeader className="items-center pt-6">
-        <img 
+        <AnimatedAvatar 
           src={member.profilePhotoUrl || `https://i.pravatar.cc/120?u=${member.id}`} 
           alt={member.name}
           className="w-24 h-24 rounded-full object-cover shadow-md border-4 border-primary-light"
@@ -77,6 +79,6 @@ export const FamilyMemberCard: React.FC<FamilyMemberCardProps> = ({ member, onEd
           Delete
         </Button>
       </CardFooter>
-    </Card>
+    </HoverCard>
   );
 };

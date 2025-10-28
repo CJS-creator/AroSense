@@ -1,14 +1,14 @@
 import React, { useMemo, useState } from 'react';
-// FIX: Replaced incorrect AppContext with useFamily hook.
 import { useFamily } from '../contexts/FamilyContext';
 import { EmergencySheet } from '../components/EmergencySheet';
 import { QrCodeModal } from '../components/QrCodeModal';
 import { Button, Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogHeader as DHeader, DialogTitle as DTitle } from '../components/bits';
 import { IconDevicePhoneMobile, IconPrinter, IconQrCode, IconEmergency, IconShieldCheck } from '../constants';
+import { useSettings } from '../contexts/SettingsContext';
 
 export const EmergencyPage: React.FC = () => {
-    // FIX: Used the useFamily hook to correctly get family-related state.
-    const { emergencyContacts, medicalNotes, familyMembers } = useFamily();
+    const { medicalNotes, familyMembers } = useFamily();
+    const { emergencyContacts } = useSettings();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [isQrOpen, setIsQrOpen] = useState(false);
 

@@ -123,8 +123,8 @@ export const SampleMedicalNotes: MedicalNote[] = [
 ];
 
 export const SampleInsurancePolicies: InsurancePolicy[] = [
-    { id: 'ins1', providerName: 'Blue Shield PPO', policyNumber: 'XF12345678', groupNumber: 'G-98765', memberId: 'fm1', effectiveDate: '2021-01-01' },
-    { id: 'ins2', providerName: 'Delta Dental', policyNumber: 'DD98765432', groupNumber: 'G-98765', memberId: 'fm2', effectiveDate: '2021-01-01' },
+    { id: 'ins1', providerName: 'Blue Shield PPO', policyNumber: 'XF12345678', groupNumber: 'G-98765', memberId: 'fm1', effectiveDate: '2021-01-01', copayAmount: 25, paymentMethod: 'HSA Card' },
+    { id: 'ins2', providerName: 'Delta Dental', policyNumber: 'DD98765432', groupNumber: 'G-98765', memberId: 'fm2', effectiveDate: '2021-01-01', copayAmount: 50 },
 ];
 
 export const SampleBills: Bill[] = [

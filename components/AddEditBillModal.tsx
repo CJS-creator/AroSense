@@ -4,6 +4,7 @@ import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 import { useToast } from './toast/useToast';
 // FIX: Replaced incorrect AppContext with useFinancial hook.
 import { useFinancial } from '../contexts/FinancialContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddEditBillModalProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ const initialFormState: Omit<Bill, 'id'> = {
     dueDate: '',
     isPaid: false,
     notes: '',
+    paymentDate: '',
 };
 
 export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onClose, billToEdit }) => {
@@ -35,6 +37,7 @@ export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onCl
                 dueDate: billToEdit.dueDate,
                 isPaid: billToEdit.isPaid,
                 notes: billToEdit.notes || '',
+                paymentDate: billToEdit.paymentDate || '',
             });
         } else {
             setFormData(initialFormState);
@@ -44,7 +47,13 @@ export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onCl
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         if (type === 'checkbox') {
-            setFormData(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+            const isChecked = (e.target as HTMLInputElement).checked;
+            setFormData(prev => ({
+                ...prev,
+                isPaid: isChecked,
+                // If unchecking, clear payment date. If checking, set to today as default if not already set.
+                paymentDate: isChecked ? (prev.paymentDate || new Date().toISOString().split('T')[0]) : ''
+            }));
         } else if (type === 'number') {
             setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
         }
@@ -109,6 +118,22 @@ export const AddEditBillModal: React.FC<AddEditBillModalProps> = ({ isOpen, onCl
                             <Input id="dueDate" name="dueDate" type="date" value={formData.dueDate} onChange={handleChange} required />
                         </div>
                     </div>
+                    <AnimatePresence>
+                        {formData.isPaid && (
+                             <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                            >
+                                <div className="space-y-2 pt-2">
+                                    <Label htmlFor="paymentDate">Payment Date</Label>
+                                    <Input id="paymentDate" name="paymentDate" type="date" value={formData.paymentDate || ''} onChange={handleChange} />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     <div className="space-y-2">
                         <Label htmlFor="notes">Notes (Optional)</Label>
                         <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., ER visit for sprained ankle." />

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ToastMessage, ToastType } from './ToastContext';
 import { IconCheckCircle, IconExclamationTriangle, IconEmergency } from '../../constants';
+import { motion } from 'framer-motion';
 
 interface ToastProps {
   toast: ToastMessage;
@@ -36,29 +37,26 @@ const toastConfig: { [key in ToastType]: { icon: React.ReactNode; bgClass: strin
 
 export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
   const { id, message, type } = toast;
-  const [isExiting, setIsExiting] = useState(false);
-
   const config = toastConfig[type];
-
-  const handleDismiss = () => {
-    setIsExiting(true);
-    setTimeout(() => onDismiss(id), 300); // Wait for animation to finish
-  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleDismiss();
+      onDismiss(id);
     }, 5000); // Auto-dismiss after 5 seconds
 
     return () => {
       clearTimeout(timer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, onDismiss]);
 
   return (
-    <div
-      className={`w-full max-w-sm overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 border border-border/50 animate-toastIn ${isExiting ? 'animate-toastOut' : ''} ${config.bgClass}`}
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: 100, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 100, scale: 0.9, transition: { duration: 0.2, ease: 'easeIn' } }}
+      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+      className={`w-full max-w-sm overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 border border-border/50 ${config.bgClass}`}
       role="alert"
       aria-live="assertive"
     >
@@ -70,7 +68,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
           </div>
           <div className="ml-4 flex-shrink-0 flex">
             <button
-              onClick={handleDismiss}
+              onClick={() => onDismiss(id)}
               className="inline-flex rounded-md bg-transparent text-textSecondary hover:text-textPrimary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-DEFAULT"
             >
               <span className="sr-only">Close</span>
@@ -81,6 +79,6 @@ export const Toast: React.FC<ToastProps> = ({ toast, onDismiss }) => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

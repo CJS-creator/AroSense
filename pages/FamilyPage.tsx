@@ -8,6 +8,7 @@ import { FamilyMember } from '../types';
 import { useFamily } from '../contexts/FamilyContext';
 import { useToast } from '../components/toast/useToast';
 import { Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle as DTitle } from '../components/bits';
+import { SlideInList } from '../components/animations/SlideInList';
 
 
 export const FamilyPage: React.FC = () => {
@@ -75,16 +76,16 @@ export const FamilyPage: React.FC = () => {
             </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <SlideInList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {familyMembers.map((member) => (
-            <FamilyMemberCard 
-              key={member.id} 
-              member={member} 
-              onEdit={handleEditMember} 
-              onDelete={requestDeleteMember} 
-            />
+              <FamilyMemberCard 
+                key={member.id}
+                member={member} 
+                onEdit={handleEditMember} 
+                onDelete={requestDeleteMember} 
+              />
           ))}
-        </div>
+        </SlideInList>
       )}
 
       <AddEditFamilyMemberModal 

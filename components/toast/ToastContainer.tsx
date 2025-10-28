@@ -1,7 +1,7 @@
 import React from 'react';
-import { useToast } from './useToast';
 import { ToastContext } from './ToastContext';
 import { Toast } from './Toast';
+import { AnimatePresence } from 'framer-motion';
 
 export const ToastContainer: React.FC = () => {
   const context = React.useContext(ToastContext);
@@ -14,14 +14,15 @@ export const ToastContainer: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-end px-4 py-6 space-y-3 pointer-events-none sm:p-6">
-      {toasts.map(toast => (
-        <div key={toast.id} className="pointer-events-auto">
-          <Toast
-            toast={toast}
-            onDismiss={removeToast}
-          />
-        </div>
-      ))}
+      <AnimatePresence initial={false}>
+        {toasts.map(toast => (
+            <Toast
+              key={toast.id}
+              toast={toast}
+              onDismiss={removeToast}
+            />
+        ))}
+      </AnimatePresence>
     </div>
   );
 };
